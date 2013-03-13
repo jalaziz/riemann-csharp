@@ -1,14 +1,14 @@
 # Riemann C# driver
 
-This driver provides a thin layer of abstraction on top of the
-protobuf layer. The two main methods are:
+This is the start of a rewrite of the C# driver by Blue Mountain Capital Management,
+availble [here](https://github.com/BlueMountainCapital/riemann-csharp).
 
-     SendEvent(string service, string state, string description, float metric, int ttl = 0)
+Documentation and unit tests are coming.
 
-Sends a single event to Riemann
+Some goals for this project:
 
-     Tick(int tickTimeInSeconds, string service, Func<TickEvent> onTick)
-
-Registers a timer that will send the value returned by onTick at
-tickTimeInSeconds seconds. Returns an IDisposable which can be used to
-remove the timer.
+ * Batch sending by queing events
+ * Parity with the Java client
+ * Sampling rate
+ * statsd-like metrics based on [this](http://labs.amara.org/2012-07-16-metrics.html#riemann) blog post
+ * Custom error handling and logging through OnError and OnSend events

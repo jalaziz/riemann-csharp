@@ -9,6 +9,7 @@ namespace Riemann
     public class Metrics
     {
         public string MachineName { get; set; }
+        public List<string> Tags { get; set; }
         public IBufferedClient RiemannClient { get; set; }
 
         public Metrics(string host, int port, bool background = true)
@@ -18,6 +19,7 @@ namespace Riemann
         public Metrics(string host, int port, int batchSize, bool background = true)
         {
             MachineName = Utility.GetHostName();
+            Tags = new List<string>();
 
             if (background)
             {
@@ -27,6 +29,22 @@ namespace Riemann
             {
                 RiemannClient = new BatchClient(host, port, batchSize);
             }
+        }
+
+        public event EventHandler<RiemannEventArgs> EventSending;
+
+        protected virtual void OnEventSending(RiemannEventArgs e)
+        {
+            EventHandler<RiemannEventArgs> handler = EventSending;
+            if (handler != null) handler(this, e);
+        }
+
+        public event EventHandler<RiemannEventArgs> EventSent;
+
+        protected virtual void OnEventSent(RiemannEventArgs e)
+        {
+            EventHandler<RiemannEventArgs> handler = EventSent;
+            if (handler != null) handler(this, e);
         }
 
         protected internal void Event(string service, long value, string metric, IEnumerable<string> tags,
@@ -41,6 +59,7 @@ namespace Riemann
                     MetricSint64 = value,
                     Time = unixTime,
                 };
+            ev.Tags.AddRange(Tags);
             ev.Tags.Add(metric);
 
             if (tags != null)
@@ -52,8 +71,11 @@ namespace Riemann
             {
                 ev.Attributes.AddRange(attributes);
             }
-            
+
+            var eventArgs = new RiemannEventArgs(ev);
+            OnEventSending(eventArgs);
             RiemannClient.SendEvent(ev);
+            OnEventSent(eventArgs);
         }
 
         public void Gauge(string service, long value, IEnumerable<string> tags = null,

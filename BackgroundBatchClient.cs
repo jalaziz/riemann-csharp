@@ -73,7 +73,14 @@ namespace Riemann
         {
             while (!token.IsCancellationRequested)
             {
-                Flush();
+                try
+                {
+                    Flush();
+                }
+                catch (Exception ex)
+                {
+                    // TODO: Add logging hooks
+                }
 
                 if (!token.IsCancellationRequested)
                 {
